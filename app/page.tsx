@@ -30,6 +30,81 @@ function parseResearchEvent(line: string): ResearchEvent | undefined {
   }
 }
 
+function inlineMarkdown(text: string) {
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.9em]"
+          key={index}
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    return part;
+  });
+}
+
+function ReportRenderer({ report }: { report: string }) {
+  if (!report) {
+    return <p className="text-sm leading-7">Waiting for the research brief...</p>;
+  }
+
+  return (
+    <div className="space-y-4 text-sm leading-7">
+      {report.split(/\n{2,}/).map((block, index) => {
+        const trimmed = block.trim();
+
+        if (!trimmed) {
+          return null;
+        }
+
+        if (trimmed.startsWith("## ")) {
+          return (
+            <h2 className="pt-2 text-xl font-semibold" key={index}>
+              {inlineMarkdown(trimmed.slice(3))}
+            </h2>
+          );
+        }
+
+        if (trimmed.startsWith("# ")) {
+          return (
+            <h1 className="text-2xl font-semibold" key={index}>
+              {inlineMarkdown(trimmed.slice(2))}
+            </h1>
+          );
+        }
+
+        if (/^[-*] /.test(trimmed)) {
+          return (
+            <ul className="list-disc space-y-2 pl-5" key={index}>
+              {trimmed.split("\n").map((item, itemIndex) => (
+                <li key={itemIndex}>
+                  {inlineMarkdown(item.replace(/^[-*] /, ""))}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        return (
+          <p className="whitespace-pre-wrap" key={index}>
+            {inlineMarkdown(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Home() {
   const [topic, setTopic] = useState(EXAMPLE_TOPICS[0]);
   const [depth, setDepth] = useState<ResearchDepth>("standard");
@@ -129,7 +204,9 @@ export default function Home() {
             }
             setEvents((current) => [
               ...current,
-              `Research finished: ${nextEvent.status}`,
+              nextEvent.status === "finished"
+                ? "Research finished"
+                : `Research ended: ${nextEvent.status}`,
             ]);
           }
 
@@ -300,9 +377,7 @@ export default function Home() {
                     {error}
                   </div>
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-sm leading-7">
-                    {report || "Waiting for the research brief..."}
-                  </pre>
+                  <ReportRenderer report={report} />
                 )}
               </article>
             </div>
