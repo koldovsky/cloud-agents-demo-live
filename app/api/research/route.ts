@@ -53,12 +53,13 @@ export async function POST(request: NextRequest) {
 
   const stream = new ReadableStream({
     async start(controller) {
+      let agent: Awaited<ReturnType<typeof Agent.create>> | undefined;
       try {
         controller.enqueue(
           send({ type: "status", message: "Creating research agent…" })
         );
 
-        const agent = await Agent.create({
+        agent = await Agent.create({
           name: `Deep Research: ${query.slice(0, 60)}`,
           apiKey: resolvedApiKey,
           cloud: {},
@@ -133,13 +134,12 @@ export async function POST(request: NextRequest) {
             result: result.result,
           })
         );
-
-        agent.close();
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Unknown error occurred";
         controller.enqueue(send({ type: "error", message }));
       } finally {
+        agent?.close();
         controller.close();
       }
     },

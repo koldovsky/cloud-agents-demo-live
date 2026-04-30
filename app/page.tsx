@@ -18,11 +18,6 @@ type DisplayItem =
   | { kind: "tool_call"; name: string; status: string; args?: unknown; result?: unknown; id: string }
   | { kind: "error"; message: string; id: string };
 
-let idCounter = 0;
-function nextId() {
-  return `item-${++idCounter}`;
-}
-
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
 
 export default function Home() {
@@ -31,9 +26,11 @@ export default function Home() {
   const [items, setItems] = useState<DisplayItem[]>([]);
   const [running, setRunning] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const idCounterRef = useRef(0);
 
   const addItem = useCallback((item: DistributiveOmit<DisplayItem, "id">) => {
-    setItems((prev) => [...prev, { ...item, id: nextId() } as DisplayItem]);
+    const id = `item-${++idCounterRef.current}`;
+    setItems((prev) => [...prev, { ...item, id } as DisplayItem]);
   }, []);
 
   const updateLastToolCall = useCallback(
