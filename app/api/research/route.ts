@@ -120,6 +120,7 @@ export async function POST(request: Request) {
     async start(controller) {
       let agent: Awaited<ReturnType<typeof Agent.create>> | undefined;
       let sawTextDelta = false;
+      let sawThinkingDelta = false;
 
       const send = (payload: StreamEvent) => {
         controller.enqueue(encoder.encode(`${JSON.stringify(payload)}\n`));
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
         }
 
         if (update.type === "thinking-delta") {
+          sawThinkingDelta = true;
           send({ event: "thinking", text: update.text });
         }
       };
@@ -141,12 +143,11 @@ export async function POST(request: Request) {
 
         agent = await Agent.create({
           apiKey,
-          model: { id: process.env.CURSOR_RESEARCH_MODEL ?? "auto" },
+          model: { id: process.env.CURSOR_RESEARCH_MODEL ?? "default" },
           name: "Deep Research",
           local: {
             cwd: process.cwd(),
             settingSources: ["project"],
-            sandboxOptions: { enabled: true },
           },
         });
 
@@ -166,7 +167,7 @@ export async function POST(request: Request) {
             send({ event: "status", message: event.text });
           }
 
-          if (event.type === "thinking" && !sawTextDelta) {
+          if (event.type === "thinking" && !sawThinkingDelta) {
             send({ event: "thinking", text: event.text });
           }
 
