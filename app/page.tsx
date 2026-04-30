@@ -340,16 +340,20 @@ export default function Home() {
                 Research workspace
               </h2>
               {agentRun ? (
-                <dl className="mt-1 flex max-w-full flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
-                  <div className="min-w-0">
-                    <dt className="inline text-slate-500">Agent </dt>
-                    <dd className="inline break-all font-mono">
+                <dl className="mt-3 grid max-w-full gap-2 text-xs text-slate-300">
+                  <div className="min-w-0 rounded-2xl border border-cyan-200/15 bg-cyan-200/10 px-3 py-2">
+                    <dt className="mb-1 font-semibold uppercase tracking-wide text-cyan-100">
+                      Agent ID
+                    </dt>
+                    <dd className="break-all font-mono leading-5">
                       {agentRun.agentId}
                     </dd>
                   </div>
-                  <div className="min-w-0">
-                    <dt className="inline text-slate-500">Run </dt>
-                    <dd className="inline break-all font-mono">
+                  <div className="min-w-0 rounded-2xl border border-cyan-200/15 bg-cyan-200/10 px-3 py-2">
+                    <dt className="mb-1 font-semibold uppercase tracking-wide text-cyan-100">
+                      Run ID
+                    </dt>
+                    <dd className="break-all font-mono leading-5">
                       {agentRun.runId}
                     </dd>
                   </div>
