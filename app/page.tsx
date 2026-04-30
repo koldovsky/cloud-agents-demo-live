@@ -111,7 +111,10 @@ export default function Home() {
   const [report, setReport] = useState("");
   const [thinking, setThinking] = useState("");
   const [events, setEvents] = useState<string[]>([]);
-  const [agentRun, setAgentRun] = useState("");
+  const [agentRun, setAgentRun] = useState<{
+    agentId: string;
+    runId: string;
+  } | null>(null);
   const [error, setError] = useState("");
   const [isResearching, setIsResearching] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -130,7 +133,7 @@ export default function Home() {
     setReport("");
     setThinking("");
     setEvents(["Preparing research request"]);
-    setAgentRun("");
+    setAgentRun(null);
     setError("");
     setIsResearching(true);
 
@@ -194,7 +197,10 @@ export default function Home() {
           }
 
           if (nextEvent.event === "meta") {
-            setAgentRun(`${nextEvent.agentId} / ${nextEvent.runId}`);
+            setAgentRun({
+              agentId: nextEvent.agentId,
+              runId: nextEvent.runId,
+            });
             setEvents((current) => [...current, "Cursor agent started"]);
           }
 
@@ -327,15 +333,32 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex min-h-[42rem] flex-col rounded-[2rem] border border-white/10 bg-slate-950/80 p-5 shadow-2xl shadow-black/30 md:p-6">
+        <div className="flex min-h-[42rem] min-w-0 flex-col rounded-[2rem] border border-white/10 bg-slate-950/80 p-5 shadow-2xl shadow-black/30 md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-            <div>
+            <div className="min-w-0">
               <h2 className="text-xl font-semibold text-white">
                 Research workspace
               </h2>
-              <p className="text-sm text-slate-400">
-                {agentRun || "Agent and run IDs appear after launch."}
-              </p>
+              {agentRun ? (
+                <dl className="mt-1 flex max-w-full flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
+                  <div className="min-w-0">
+                    <dt className="inline text-slate-500">Agent </dt>
+                    <dd className="inline break-all font-mono">
+                      {agentRun.agentId}
+                    </dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="inline text-slate-500">Run </dt>
+                    <dd className="inline break-all font-mono">
+                      {agentRun.runId}
+                    </dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-sm text-slate-400">
+                  Agent and run IDs appear after launch.
+                </p>
+              )}
             </div>
             <span
               className={`rounded-full px-3 py-1 text-sm ${
